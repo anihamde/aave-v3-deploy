@@ -6,11 +6,12 @@ import {
   FALLBACK_ORACLE_ID,
   ORACLE_ID,
   TESTNET_REWARD_TOKEN_PREFIX,
+  TESTNET_PRICE_AGGR_PREFIX,
 } from "../../helpers/deploy-ids";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import {
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  MOCK_ORACLES_PRICES,
   V3_CORE_VERSION,
 } from "../../helpers/constants";
 import { getContract, waitForTx } from "../../helpers/utilities/tx";
@@ -62,7 +63,74 @@ const func: DeployFunction = async function ({
     );
   }
 
-  return true;
+  // pyth change
+  // 2. set fallback oracle
+  const aaveOracle = await getContract("AaveOracle", statePriceOracle);
+  const { address: configFallbackOracle} = (await deployments.get(FALLBACK_ORACLE_ID));
+  const stateFallbackOracle = await aaveOracle.getFallbackOracle();
+  if (getAddress(configFallbackOracle) === getAddress(stateFallbackOracle)) {
+    console.log("[aave-oracle] Fallback oracle already set. Skipping tx.");
+  } else {
+    await waitForTx(await aaveOracle.setFallbackOracle(configFallbackOracle));
+    console.log(`[Deployment] Added Fallback oracle ${configFallbackOracle} to AaveOracle`);
+  }
+  // 3. For each source, update mock Pyth price to mirror aggregator price
+  const poolConfig = loadPoolConfig(MARKET_NAME);
+  const network = (process.env.FORK ? process.env.FORK : hre.network.name) as eNetwork;
+  const reserves = (await getReserveAddresses(poolConfig, network));
+  let symbols = Object.keys(reserves);
+  for (const symbol of symbols) {
+    const price = symbol === "StkAave"
+      ? MOCK_ORACLES_PRICES["AAVE"]
+      : MOCK_ORACLES_PRICES[symbol];
+    if (!price) {
+      throw `[ERROR] Misisng mock price for asset ${symbol} at MOCK_ORACLES_PRICES constant located at src/constants.ts`
+    }
+    const { address: source } = (await deployments.get(
+      `${symbol}${TESTNET_PRICE_AGGR_PREFIX}`
+    ));
+    await aaveOracle.updateWithPriceFeedUpdateData(source, price, 1, 0, price, 1, 1_600_000_000_000);
+  }
+
+  // 4. If testnet, setup fallback token prices
+  if (isProductionMarket(poolConfig)) {
+    console.log("[Deployment] Skipping testnet token prices setup");
+    // Early exit if is not a testnet market
+    return true;
+  } else {
+    console.log("[Deployment] Setting up fallback oracle default prices for testnet environment");
+    const reserves = await getReserveAddresses(poolConfig, network);
+    const rewards = isIncentivesEnabled(poolConfig)
+      ? await getSubTokensByPrefix(TESTNET_REWARD_TOKEN_PREFIX)
+      : [];
+    const rewardsSymbols = rewards.map(({ symbol }) => symbol);
+    const symbols = [...Object.keys(reserves), ...rewardsSymbols];
+    const allTokens = {
+      ...reserves,
+    };
+    rewards.forEach(({ symbol, artifact: { address } }) => {
+      allTokens[symbol] = address;
+    });
+    // Iterate each token symbol and deploy a mock aggregator
+    await Bluebird.each(symbols, async (symbol) => {
+      const price =
+        symbol === "StkAave"
+          ? MOCK_ORACLES_PRICES["AAVE"]
+          : MOCK_ORACLES_PRICES[symbol];
+
+      if (!price) {
+        throw `[ERROR] Missing mock price for asset ${symbol} at MOCK_ORACLES_PRICES constant located at src/constants.ts`;
+      }
+      await waitForTx(
+        await PriceOracle__factory.connect(
+          configFallbackOracle,
+          await hre.ethers.getSigner(deployer)
+        ).setAssetPrice(allTokens[symbol], price)
+      );
+    });
+    console.log("[Deployment] Fallback oracle asset prices updated");
+    return true
+  }
 };
 
 // This script can only be run successfully once per market, core version, and network
