@@ -532,6 +532,8 @@ export interface IBaseConfiguration {
     protocol: number;
   };
   RateStrategies: IStrategy;
+  // pyth change
+  PythContract: tEthereumAddress;
 }
 
 export interface ICommonConfiguration extends IBaseConfiguration {}
