@@ -69,6 +69,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eArbitrumNetwork.arbitrumTestnet]: ZERO_ADDRESS,
     [eEthereumNetwork.rinkeby]: ZERO_ADDRESS,
   },
+  PythContract: "0x4305FB66699C3B2702D4d05CF36551390A4c69C6",
   ReservesConfig: {},
   IncentivesConfig: {
     enabled: {

@@ -85,6 +85,7 @@ export const ArbitrumConfig: IAaveConfiguration = {
       EURS: "0xA14d53bC1F1c0F31B4aA3BD109344E5009051a84",
     },
   },
+  PythContract: "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 };
 
 export default ArbitrumConfig;

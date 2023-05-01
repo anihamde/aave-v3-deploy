@@ -81,6 +81,7 @@ export const AvalancheMarket: IAaveConfiguration = {
       assets: ["USDC", "USDT", "DAI"],
     },
   },
+  PythContract: "0x4305FB66699C3B2702D4d05CF36551390A4c69C6",
 };
 
 export default AvalancheMarket;
