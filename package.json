@@ -1,6 +1,6 @@
 {
-  "name": "@aave/deploy-v3",
-  "version": "1.55.3",
+  "name": "@anirudhtx/aave-v3-deploy-pyth",
+  "version": "1.0.0",
   "files": [
     "dist",
     "LICENSE",
@@ -78,7 +78,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/aave/aave-v3-deploy"
+    "url": "git://github.com/anihamde/aave-v3-deploy"
   },
   "dependencies": {
     "@pythnetwork/pyth-sdk-solidity": "^2.2.1",
