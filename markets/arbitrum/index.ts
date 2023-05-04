@@ -51,7 +51,7 @@ export const ArbitrumConfig: IAaveConfiguration = {
       AAVE: ZERO_ADDRESS,
       EURS: ZERO_ADDRESS,
     },
-    [eArbitrumNetwork.goerliNitro]: {
+    [eArbitrumNetwork.görliNitro]: {
       DAI: ZERO_ADDRESS,
       LINK: ZERO_ADDRESS,
       USDC: ZERO_ADDRESS,

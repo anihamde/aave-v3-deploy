@@ -39,15 +39,17 @@ const func: DeployFunction = async function ({
   ...hre
 }: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
+  const poolConfig = await loadPoolConfig(MARKET_NAME as ConfigNames);
+  const network = (
+    process.env.FORK ? process.env.FORK : hre.network.name
+  ) as eNetwork;
   const addressesProviderArtifact = await deployments.get(
     POOL_ADDRESSES_PROVIDER_ID
   );
-  const addressesProviderInstance = (
-    await hre.ethers.getContractAt(
-      addressesProviderArtifact.abi,
-      addressesProviderArtifact.address
-    )
-  ).connect(await hre.ethers.getSigner(deployer)) as PoolAddressesProvider;
+  const addressesProviderInstance = (await hre.ethers.getContractAt(
+    addressesProviderArtifact.abi,
+    addressesProviderArtifact.address
+  )) as PoolAddressesProvider;
 
   // 1. Set price oracle
   const configPriceOracle = (await deployments.get(ORACLE_ID)).address;
@@ -65,7 +67,7 @@ const func: DeployFunction = async function ({
 
   // pyth change
   // 2. set fallback oracle
-  const aaveOracle = await getContract("AaveOracle", statePriceOracle);
+  const aaveOracle = (await getContract("AaveOracle", await addressesProviderInstance.getPriceOracle()));
   const { address: configFallbackOracle} = (await deployments.get(FALLBACK_ORACLE_ID));
   const stateFallbackOracle = await aaveOracle.getFallbackOracle();
   if (getAddress(configFallbackOracle) === getAddress(stateFallbackOracle)) {
@@ -75,8 +77,6 @@ const func: DeployFunction = async function ({
     console.log(`[Deployment] Added Fallback oracle ${configFallbackOracle} to AaveOracle`);
   }
   // 3. For each source, update mock Pyth price to mirror aggregator price
-  const poolConfig = loadPoolConfig(MARKET_NAME);
-  const network = (process.env.FORK ? process.env.FORK : hre.network.name) as eNetwork;
   const reserves = (await getReserveAddresses(poolConfig, network));
   let symbols = Object.keys(reserves);
   for (const symbol of symbols) {

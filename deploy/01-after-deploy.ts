@@ -44,12 +44,6 @@ const func: DeployFunction = async function ({
     console.log("- Pool unpaused and accepting deposits.");
   }
 
-  if (process.env.TRANSFER_OWNERSHIP === "true") {
-    await hre.run("transfer-protocol-ownership");
-    await hre.run("renounce-pool-admin");
-    await hre.run("view-protocol-roles");
-  }
-
   await hre.run("print-deployments");
 };
 

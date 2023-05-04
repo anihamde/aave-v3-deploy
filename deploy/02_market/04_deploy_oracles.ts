@@ -21,7 +21,6 @@ import { eNetwork, ICommonConfiguration, SymbolMap } from "../../helpers/types";
 import { getPairsTokenAggregator } from "../../helpers/init-helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { MARKET_NAME } from "../../helpers/env";
-import { is } from "bluebird";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -41,7 +40,9 @@ const func: DeployFunction = async function ({
     POOL_ADDRESSES_PROVIDER_ID
   );
 
-  const fallbackOracleAddress = ZERO_ADDRESS;
+  const fallbackOracleAddress =
+    (await getParamPerNetwork(poolConfig.FallbackOracle, network)) ||
+    ZERO_ADDRESS;
 
   const reserveAssets = await getReserveAddresses(poolConfig, network);
   const chainlinkAggregators = await getChainlinkOracles(poolConfig, network);
@@ -84,6 +85,13 @@ const func: DeployFunction = async function ({
     contract: "AaveOracle",
   });
 
+  // Deploy FallbackOracle
+  await deploy(FALLBACK_ORACLE_ID, {
+    from: deployer,
+    args: [],
+    ...COMMON_DEPLOY_PARAMS,
+    contract: "PriceOracle",
+  });
   return true;
 };
 

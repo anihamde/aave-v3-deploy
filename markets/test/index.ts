@@ -1,8 +1,3 @@
-import {
-  rateStrategyStableOne,
-  rateStrategyStableTwo,
-  rateStrategyVolatileOne,
-} from "./rateStrategies";
 import { ZERO_ADDRESS } from "../../helpers";
 import {
   IAaveConfiguration,

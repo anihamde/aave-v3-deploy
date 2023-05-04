@@ -1,4 +1,3 @@
-import { rateStrategyDebtPrevention } from "./rateStrategies";
 import { eHarmonyNetwork, IAaveConfiguration } from "../../helpers/types";
 import { AaveMarket } from "../aave/index";
 import {
@@ -69,7 +68,6 @@ export const HarmonyMarket: IAaveConfiguration = {
       AAVE: "0x6EE1EfCCe688D5B79CB8a400870AF471c5282992",
     },
   },
-  PythContract: "0x0",
   EModes: {
     StableEMode: {
       id: "1",
@@ -80,9 +78,7 @@ export const HarmonyMarket: IAaveConfiguration = {
       assets: ["USDC", "USDT", "DAI"],
     },
   },
-  RateStrategies: {
-    rateStrategyDebtPrevention,
-  },
+  PythContract: "0x0",
 };
 
 export default HarmonyMarket;

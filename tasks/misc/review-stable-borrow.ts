@@ -28,12 +28,11 @@ task(`review-stable-borrow`, ``)
       }: { fix: boolean; vvv: boolean; checkOnly: string },
       hre
     ) => {
-      const { poolAdmin } = await hre.getNamedAccounts();
+      const network = FORK ? FORK : (hre.network.name as eNetwork);
+      const { deployer } = await hre.getNamedAccounts();
       const checkOnlyReserves: string[] = checkOnly ? checkOnly.split(",") : [];
       const dataProvider = await getAaveProtocolDataProvider();
-      const poolConfigurator = (await getPoolConfiguratorProxy()).connect(
-        await hre.ethers.getSigner(poolAdmin)
-      );
+      const poolConfigurator = await getPoolConfiguratorProxy();
 
       const poolConfig = await loadPoolConfig(MARKET_NAME);
       const reserves = await dataProvider.getAllReservesTokens();

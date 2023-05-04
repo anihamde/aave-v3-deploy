@@ -1,4 +1,3 @@
-import { getFirstSigner } from "./utilities/signer";
 import { StakedTokenTransferStrategy } from "./../typechain";
 import { PullRewardsTransferStrategy } from "./../typechain";
 import {
@@ -31,7 +30,7 @@ import {
   MockVariableDebtToken,
   MockStableDebtToken,
   MockPool,
-  Faucet,
+  ERC20Faucet,
   WrappedTokenGatewayV3,
   UiPoolDataProviderV3,
   WalletBalanceProvider,
@@ -47,6 +46,7 @@ import {
   ORACLE_ID,
   FALLBACK_ORACLE_ID,
   TESTNET_TOKEN_PREFIX,
+  FAUCET_ID,
   INCENTIVES_V2_IMPL_ID,
   INCENTIVES_PULL_REWARDS_STRATEGY_ID,
   INCENTIVES_PROXY_ID,
@@ -54,7 +54,6 @@ import {
   STAKE_AAVE_PROXY,
   STAKE_AAVE_IMPL_V3,
   L2_ENCODER,
-  FAUCET_OWNABLE_ID,
 } from "./deploy-ids";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { RewardsController } from "../typechain";
@@ -262,10 +261,10 @@ export const getTestnetReserveAddressFromSymbol = async (symbol: string) => {
   return testnetReserve.address;
 };
 
-export const getFaucet = async (address?: string): Promise<Faucet> =>
+export const getERC20Faucet = async (address?: string): Promise<ERC20Faucet> =>
   getContract(
-    "Faucet",
-    address || (await hre.deployments.get(FAUCET_OWNABLE_ID)).address
+    "ERC20Faucet",
+    address || (await hre.deployments.get(FAUCET_ID)).address
   );
 
 export const getWrappedTokenGateway = async (
@@ -340,17 +339,3 @@ export const getEmissionManager = async (address?: tEthereumAddress) =>
     "EmissionManager",
     address || (await hre.deployments.get(EMISSION_MANAGER_ID)).address
   );
-
-export const getOwnableContract = async (address: string) => {
-  const ownableInterface = new hre.ethers.utils.Interface([
-    "function owner() public view returns (address)",
-    "function transferOwnership(address newOwner) public",
-    "function renounceOwnership() public",
-  ]);
-
-  return new hre.ethers.Contract(
-    address,
-    ownableInterface,
-    await getFirstSigner()
-  );
-};

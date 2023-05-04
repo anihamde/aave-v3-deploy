@@ -49,7 +49,6 @@ export const WRAPPED_NATIVE_TOKEN_PER_NETWORK: { [network: string]: string } = {
 
 export const ZERO_BYTES_32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
-
 // pyth change
 export const MOCK_ORACLES_PRICES: { [key: string]: string } = {
   AAVE: parseUnits("300", 8).toString(),
@@ -96,9 +95,8 @@ export const chainlinkAggregatorProxy: Record<string, string> = {
   "optimism-testnet": "0xEFFC18fC3b7eb8E676dac549E0c693ad50D1Ce31",
   "fantom-testnet": "0xe04676B9A9A2973BCb0D1478b5E1E9098BBB7f3D",
   ropsten: "0x12BAaa24D85A4A180F0d5ae67b6aCbDDD58968EA",
-  goerli: "0x60E4B131f0F219c72b0346675283E73888e4AB24",
-  [eArbitrumNetwork.goerliNitro]: "0xC09e69E79106861dF5d289dA88349f10e2dc6b5C",
-  [eEthereumNetwork.sepolia]: "0x6c60d915c7a646860dba836ffcb7f112b6cfdc76",
+  görli: "0x60E4B131f0F219c72b0346675283E73888e4AB24",
+  [eArbitrumNetwork.görliNitro]: "0xC09e69E79106861dF5d289dA88349f10e2dc6b5C",
 };
 
 export const chainlinkEthUsdAggregatorProxy: Record<string, string> = {
@@ -119,36 +117,12 @@ export const chainlinkEthUsdAggregatorProxy: Record<string, string> = {
   "optimism-testnet": "0xEFFC18fC3b7eb8E676dac549E0c693ad50D1Ce31",
   "fantom-testnet": "0xB8C458C957a6e6ca7Cc53eD95bEA548c52AFaA24",
   ropsten: "0x12BAaa24D85A4A180F0d5ae67b6aCbDDD58968EA",
-  goerli: "0x60E4B131f0F219c72b0346675283E73888e4AB24",
-  [eArbitrumNetwork.goerliNitro]: "0xC09e69E79106861dF5d289dA88349f10e2dc6b5C",
-  [eEthereumNetwork.sepolia]: "0x6c60d915c7a646860dba836ffcb7f112b6cfdc76",
+  görli: "0x60E4B131f0F219c72b0346675283E73888e4AB24",
+  [eArbitrumNetwork.görliNitro]: "0xC09e69E79106861dF5d289dA88349f10e2dc6b5C",
 };
-
-export const ETHEREUM_SHORT_EXECUTOR =
-  "0xEE56e2B3D491590B5b31738cC34d5232F378a8D5";
 
 export const EMPTY_STORAGE_SLOT =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-export const POOL_ADMIN: Record<string, string> = {
-  [eArbitrumNetwork.arbitrum]: "0xbbd9f90699c1FA0D7A65870D241DD1f1217c96Eb",
-  [eAvalancheNetwork.avalanche]: "0xa35b76E4935449E33C56aB24b23fcd3246f13470",
-  [eFantomNetwork.main]: "0x39CB97b105173b56b5a2b4b33AD25d6a50E6c949",
-  [eHarmonyNetwork.main]: "0xb2f0C5f37f4beD2cB51C44653cD5D84866BDcd2D",
-  [eOptimismNetwork.main]: "0xE50c8C619d05ff98b22Adf991F17602C774F785c",
-  [ePolygonNetwork.polygon]: "0xdc9A35B16DB4e126cFeDC41322b3a36454B1F772",
-  [eEthereumNetwork.main]: ETHEREUM_SHORT_EXECUTOR,
-};
-
-export const EMERGENCY_ADMIN: Record<string, string> = {
-  [eArbitrumNetwork.arbitrum]: "0xbbd9f90699c1FA0D7A65870D241DD1f1217c96Eb",
-  [eAvalancheNetwork.avalanche]: "0xa35b76E4935449E33C56aB24b23fcd3246f13470",
-  [eFantomNetwork.main]: "0x39CB97b105173b56b5a2b4b33AD25d6a50E6c949",
-  [eHarmonyNetwork.main]: "0xb2f0C5f37f4beD2cB51C44653cD5D84866BDcd2D",
-  [eOptimismNetwork.main]: "0xE50c8C619d05ff98b22Adf991F17602C774F785c",
-  [ePolygonNetwork.polygon]: "0x1450F2898D6bA2710C98BE9CAF3041330eD5ae58",
-  [eEthereumNetwork.main]: ETHEREUM_SHORT_EXECUTOR,
-};
 
 export const DEFAULT_NAMED_ACCOUNTS = {
   deployer: {

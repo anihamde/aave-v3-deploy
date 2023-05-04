@@ -1,7 +1,7 @@
 import { ConfigNames } from "./market-config-helpers";
+export let { MARKET_NAME }: { MARKET_NAME: ConfigNames } = process.env as any;
 
-export const MARKET_NAME =
-  (process.env.MARKET_NAME as ConfigNames) || ConfigNames.Commons;
+MARKET_NAME = MARKET_NAME ? MARKET_NAME : ConfigNames.Commons;
 
 export const ENABLE_REWARDS = process.env.ENABLE_REWARDS
   ? process.env.ENABLE_REWARDS === "true"
@@ -15,6 +15,3 @@ export const COMMON_DEPLOY_PARAMS = {
   log: true,
   deterministicDeployment: DETERMINISTIC_DEPLOYMENT ?? false,
 };
-
-export const PERMISSIONED_FAUCET =
-  process.env.PERMISSIONED_FAUCET === "true" || false;

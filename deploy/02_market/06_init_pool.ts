@@ -48,9 +48,10 @@ const func: DeployFunction = async function ({
     POOL_ADDRESSES_PROVIDER_ID
   );
 
-  const addressesProviderInstance = (
-    await getContract("PoolAddressesProvider", addressesProvider)
-  ).connect(await hre.ethers.getSigner(deployer)) as PoolAddressesProvider;
+  const addressesProviderInstance = (await getContract(
+    "PoolAddressesProvider",
+    addressesProvider
+  )) as PoolAddressesProvider;
 
   const isPoolProxyPending =
     (await addressesProviderInstance.getPool()) === ZERO_ADDRESS;
@@ -110,9 +111,7 @@ const func: DeployFunction = async function ({
   }
 
   // Set Flash Loan premiums
-  const poolConfiguratorInstance = (await getPoolConfiguratorProxy()).connect(
-    await hre.ethers.getSigner(deployer)
-  );
+  const poolConfiguratorInstance = await getPoolConfiguratorProxy();
 
   // Set total Flash Loan Premium
   await waitForTx(

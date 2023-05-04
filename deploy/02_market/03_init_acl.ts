@@ -23,12 +23,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     POOL_ADDRESSES_PROVIDER_ID
   );
 
-  const addressesProviderInstance = (
-    await hre.ethers.getContractAt(
-      addressesProviderArtifact.abi,
-      addressesProviderArtifact.address
-    )
-  ).connect(await hre.ethers.getSigner(deployer)) as PoolAddressesProvider;
+  const addressesProviderInstance = (await hre.ethers.getContractAt(
+    addressesProviderArtifact.abi,
+    addressesProviderArtifact.address
+  )) as PoolAddressesProvider;
 
   // 1. Set ACL admin at AddressesProvider
   await waitForTx(await addressesProviderInstance.setACLAdmin(aclAdmin));
@@ -41,12 +39,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ...COMMON_DEPLOY_PARAMS,
   });
 
-  const aclManager = (
-    await hre.ethers.getContractAt(
-      aclManagerArtifact.abi,
-      aclManagerArtifact.address
-    )
-  ).connect(aclAdminSigner) as ACLManager;
+  const aclManager = (await hre.ethers.getContractAt(
+    aclManagerArtifact.abi,
+    aclManagerArtifact.address
+  )) as ACLManager;
 
   // 3. Setup ACLManager at AddressesProviderInstance
   await waitForTx(

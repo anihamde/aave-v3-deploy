@@ -40,8 +40,7 @@ export enum eEthereumNetwork {
   hardhat = "hardhat",
   tenderly = "tenderly",
   rinkeby = "rinkeby",
-  goerli = "goerli",
-  sepolia = "sepolia",
+  görli = "görli",
 }
 
 export enum ePolygonNetwork {
@@ -61,7 +60,7 @@ export enum eAvalancheNetwork {
 export enum eArbitrumNetwork {
   arbitrum = "arbitrum",
   arbitrumTestnet = "arbitrum-testnet",
-  goerliNitro = "arbitrum-goerli",
+  görliNitro = "arbitrum-görli",
 }
 
 export enum eHarmonyNetwork {
@@ -377,17 +376,11 @@ export enum TokenContractId {
   AVAX = "AVAX",
 }
 
-export interface IReserveParams
-  extends IReserveBorrowParams,
-    IReserveCollateralParams {
+export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
   supplyCap: string;
   strategy: IInterestRateStrategyParams;
-}
-
-export interface IStrategy {
-  [key: string]: IInterestRateStrategyParams;
 }
 
 export interface IInterestRateStrategyParams {
@@ -531,7 +524,6 @@ export interface IBaseConfiguration {
     total: number;
     protocol: number;
   };
-  RateStrategies: IStrategy;
   // pyth change
   PythContract: tEthereumAddress;
 }

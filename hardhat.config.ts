@@ -22,7 +22,6 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-dependency-compiler";
-import "@nomicfoundation/hardhat-chai-matchers";
 
 const SKIP_LOAD = process.env.SKIP_LOAD === "true";
 const TASK_FOLDERS = ["misc", "market-registry"];
@@ -109,16 +108,9 @@ export default {
       420
     ),
     [eOptimismNetwork.main]: getCommonNetworkConfig(eOptimismNetwork.main, 10),
-    [eEthereumNetwork.goerli]: getCommonNetworkConfig(
-      eEthereumNetwork.goerli,
-      5
-    ),
-    [eEthereumNetwork.sepolia]: getCommonNetworkConfig(
-      eEthereumNetwork.sepolia,
-      11155111
-    ),
-    [eArbitrumNetwork.goerliNitro]: getCommonNetworkConfig(
-      eArbitrumNetwork.goerliNitro,
+    [eEthereumNetwork.görli]: getCommonNetworkConfig(eEthereumNetwork.görli, 5),
+    [eArbitrumNetwork.görliNitro]: getCommonNetworkConfig(
+      eArbitrumNetwork.görliNitro,
       421613
     ),
   },
@@ -170,7 +162,6 @@ export default {
       "@aave/core-v3/contracts/mocks/helpers/MockPool.sol",
       "@aave/core-v3/contracts/mocks/helpers/MockL2Pool.sol",
       "@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20Detailed.sol",
-      "@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol",
       "@aave/core-v3/contracts/mocks/oracle/PriceOracle.sol",
       "@aave/core-v3/contracts/mocks/tokens/MintableDelegationERC20.sol",
       "@aave/periphery-v3/contracts/misc/UiPoolDataProviderV3.sol",
@@ -182,9 +173,6 @@ export default {
       "@aave/periphery-v3/contracts/rewards/transfer-strategies/StakedTokenTransferStrategy.sol",
       "@aave/periphery-v3/contracts/rewards/transfer-strategies/PullRewardsTransferStrategy.sol",
       "@aave/periphery-v3/contracts/rewards/EmissionManager.sol",
-      "@aave/periphery-v3/contracts/mocks/WETH9Mock.sol",
-      "@aave/periphery-v3/contracts/mocks/testnet-helpers/Faucet.sol",
-      "@aave/periphery-v3/contracts/mocks/testnet-helpers/TestnetERC20.sol",
       "@aave/periphery-v3/contracts/treasury/Collector.sol",
       "@aave/periphery-v3/contracts/treasury/CollectorController.sol",
       "@aave/periphery-v3/contracts/treasury/AaveEcosystemReserveV2.sol",

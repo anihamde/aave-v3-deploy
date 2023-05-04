@@ -57,15 +57,16 @@ const func: DeployFunction = async function ({
     POOL_ADDRESSES_PROVIDER_ID
   );
 
-  const addressesProviderInstance = (
-    await getContract("PoolAddressesProvider", addressesProvider)
-  ).connect(await hre.ethers.getSigner(deployer)) as PoolAddressesProvider;
+  const addressesProviderInstance = (await getContract(
+    "PoolAddressesProvider",
+    addressesProvider
+  )) as PoolAddressesProvider;
 
   // Deploy EmissionManager
   const emissionManagerArtifact = await deploy(EMISSION_MANAGER_ID, {
     from: deployer,
     contract: "EmissionManager",
-    args: [deployer],
+    args: [incentivesEmissionManager],
     ...COMMON_DEPLOY_PARAMS,
   });
   const emissionManager = (await hre.ethers.getContractAt(
@@ -125,8 +126,13 @@ const func: DeployFunction = async function ({
   );
 
   // Init RewardsController address
+  const incentivesEmissionManagerSigner = await hre.ethers.getSigner(
+    incentivesEmissionManager
+  );
   await waitForTx(
-    await emissionManager.setRewardsController(rewardsProxyAddress)
+    await emissionManager
+      .connect(incentivesEmissionManagerSigner)
+      .setRewardsController(rewardsProxyAddress)
   );
 
   if (!isLive) {
@@ -161,12 +167,6 @@ const func: DeployFunction = async function ({
       );
     }
   }
-
-  // Transfer emission manager ownership
-
-  await waitForTx(
-    await emissionManager.transferOwnership(incentivesEmissionManager)
-  );
 
   return true;
 };

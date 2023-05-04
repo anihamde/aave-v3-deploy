@@ -13,12 +13,9 @@ task(
   `setup-liquidation-protocol-fee`,
   `Setups reserve liquidation protocol fee from configuration`
 ).setAction(async (_, hre) => {
-  const { poolAdmin } = await hre.getNamedAccounts();
   const config = await loadPoolConfig(MARKET_NAME as ConfigNames);
 
-  const poolConfigurator = (await getPoolConfiguratorProxy()).connect(
-    await hre.ethers.getSigner(poolAdmin)
-  );
+  const poolConfigurator = await getPoolConfiguratorProxy();
 
   let assetsWithProtocolFees = [];
   for (let asset in config.ReservesConfig) {

@@ -1,7 +1,7 @@
 import {
   STAKE_AAVE_PROXY,
   TESTNET_REWARD_TOKEN_PREFIX,
-} from "../../../helpers/deploy-ids";
+} from "./../../../helpers/deploy-ids";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { COMMON_DEPLOY_PARAMS } from "../../../helpers/env";
@@ -13,17 +13,13 @@ import {
   loadPoolConfig,
 } from "../../../helpers/market-config-helpers";
 import { eNetwork } from "../../../helpers/types";
-import {
-  // FAUCET_ID,
-  TESTNET_TOKEN_PREFIX,
-  FAUCET_OWNABLE_ID,
-} from "../../../helpers/deploy-ids";
+import { FAUCET_ID, TESTNET_TOKEN_PREFIX } from "../../../helpers/deploy-ids";
 import Bluebird from "bluebird";
 import {
   deployInitializableAdminUpgradeabilityProxy,
   setupStkAave,
 } from "../../../helpers/contract-deployments";
-import { MARKET_NAME, PERMISSIONED_FAUCET } from "../../../helpers/env";
+import { MARKET_NAME } from "../../../helpers/env";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -31,8 +27,12 @@ const func: DeployFunction = async function ({
   ...hre
 }: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
-  const { deployer, incentivesEmissionManager, incentivesRewardsVault } =
-    await getNamedAccounts();
+  const {
+    deployer,
+    incentivesEmissionManager,
+    incentivesProxyAdmin,
+    incentivesRewardsVault,
+  } = await getNamedAccounts();
   const poolConfig = await loadPoolConfig(MARKET_NAME as ConfigNames);
   const network = (
     process.env.FORK ? process.env.FORK : hre.network.name
@@ -47,15 +47,6 @@ const func: DeployFunction = async function ({
     // Early exit if is not a testnet market
     return;
   }
-  // Deployment of FaucetOwnable helper contract
-  // TestnetERC20 is owned by Faucet. Faucet is owned by defender relayer.
-  console.log("- Deployment of FaucetOwnable contract");
-  const faucetOwnable = await deploy(FAUCET_OWNABLE_ID, {
-    from: deployer,
-    contract: "Faucet",
-    args: [deployer, PERMISSIONED_FAUCET],
-    ...COMMON_DEPLOY_PARAMS,
-  });
 
   console.log(
     `- Setting up testnet tokens for "${MARKET_NAME}" market at "${network}" network`
@@ -65,10 +56,7 @@ const func: DeployFunction = async function ({
   const reserveSymbols = Object.keys(reservesConfig);
 
   if (reserveSymbols.length === 0) {
-    console.warn(
-      "Market Config does not contain ReservesConfig. Skipping testnet token setup."
-    );
-    return;
+    throw "[Deployment][Error] Missing ReserveAssets configuration";
   }
 
   // 0. Deployment of ERC20 mintable tokens for testing purposes
@@ -76,36 +64,24 @@ const func: DeployFunction = async function ({
     if (!reservesConfig[symbol]) {
       throw `[Deployment] Missing token "${symbol}" at ReservesConfig`;
     }
-
-    if (symbol == poolConfig.WrappedNativeTokenSymbol) {
-      console.log("Deploy of WETH9 mock");
-      await deploy(
-        `${poolConfig.WrappedNativeTokenSymbol}${TESTNET_TOKEN_PREFIX}`,
-        {
-          from: deployer,
-          contract: "WETH9Mock",
-          args: [
-            poolConfig.WrappedNativeTokenSymbol,
-            poolConfig.WrappedNativeTokenSymbol,
-            faucetOwnable.address,
-          ],
-          ...COMMON_DEPLOY_PARAMS,
-        }
-      );
-    } else {
-      console.log("Deploy of TestnetERC20 contract", symbol);
+    // WETH9 native mock token already deployed at deploy/01_periphery/02_native_token_gateway.ts
+    if (symbol !== poolConfig.WrappedNativeTokenSymbol) {
       await deploy(`${symbol}${TESTNET_TOKEN_PREFIX}`, {
         from: deployer,
-        contract: "TestnetERC20",
-        args: [
-          symbol,
-          symbol,
-          reservesConfig[symbol].reserveDecimals,
-          faucetOwnable.address,
-        ],
+        contract: "MintableERC20",
+        args: [symbol, symbol, reservesConfig[symbol].reserveDecimals],
         ...COMMON_DEPLOY_PARAMS,
       });
     }
+  });
+
+  // 1. Deployment of Faucet helper contract
+  console.log("- Deployment of Faucet contract");
+  await deploy(FAUCET_ID, {
+    from: deployer,
+    contract: "ERC20Faucet",
+    args: [],
+    ...COMMON_DEPLOY_PARAMS,
   });
 
   if (isIncentivesEnabled(poolConfig)) {
@@ -119,8 +95,8 @@ const func: DeployFunction = async function ({
       const reward = rewardSymbols[y];
       await deploy(`${reward}${TESTNET_REWARD_TOKEN_PREFIX}`, {
         from: deployer,
-        contract: "TestnetERC20",
-        args: [reward, reward, 18, faucetOwnable.address],
+        contract: "MintableERC20",
+        args: [reward, reward, 18],
         ...COMMON_DEPLOY_PARAMS,
       });
     }

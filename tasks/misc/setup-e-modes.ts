@@ -15,10 +15,7 @@ import { ZERO_ADDRESS } from "../../helpers";
 task(`setup-e-modes`, `Setups e-modes from config`).setAction(
   async (_, hre) => {
     const config = await loadPoolConfig(MARKET_NAME as ConfigNames);
-    const { poolAdmin } = await hre.getNamedAccounts();
-    const poolConfigurator = (await getPoolConfiguratorProxy()).connect(
-      await hre.ethers.getSigner(poolAdmin)
-    );
+    const poolConfigurator = await getPoolConfiguratorProxy();
 
     for (let key in config.EModes) {
       const eMode = config.EModes[key];
