@@ -59,7 +59,6 @@ const func: DeployFunction = async function ({
     contract: "MockPyth"
   });
   const pythContract = (await getPythOracle(poolConfig, network));
-  const isMock = true;
 
   const [assets, sources] = getPairsTokenAggregator(
     reserveAssets,
@@ -78,7 +77,6 @@ const func: DeployFunction = async function ({
       parseUnits("1", OracleQuoteUnit),
       // pyth change
       pythContract,
-      isMock,
       oracleMinFreshness
     ],
     ...COMMON_DEPLOY_PARAMS,

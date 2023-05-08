@@ -32,6 +32,8 @@ import {
 import { eNetwork } from "../../helpers/types";
 import Bluebird from "bluebird";
 import { MARKET_NAME } from "../../helpers/env";
+import Web3 from "web3";
+import { ethers } from "hardhat";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -89,7 +91,13 @@ const func: DeployFunction = async function ({
     const { address: source } = (await deployments.get(
       `${symbol}${TESTNET_PRICE_AGGR_PREFIX}`
     ));
-    await aaveOracle.updateWithPriceFeedUpdateData(source, price, 1, 0, price, 1, 1_600_000_000_000);
+    var web3 = new Web3(Web3.givenProvider);
+    let sourceBytes32 = "0x"+web3.utils.padLeft(source.replace("0x", ""), 64);
+    const updateData = web3.eth.abi.encodeParameters(
+        ['bytes32', 'int64', 'uint64', 'int32', 'uint64', 'int64', 'uint64', 'int32', 'uint64'], 
+        [sourceBytes32, price, "1", "0", "1600000000000", price, "1", "0", "1600000000000"]
+    );
+    await aaveOracle.updatePythPrice([updateData], { value: ethers.utils.parseEther('1.0') });
   }
 
   // 4. If testnet, setup fallback token prices
