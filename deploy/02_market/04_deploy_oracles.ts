@@ -21,6 +21,7 @@ import { eNetwork, ICommonConfiguration, SymbolMap } from "../../helpers/types";
 import { getPairsTokenAggregator } from "../../helpers/init-helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { MARKET_NAME } from "../../helpers/env";
+import Web3 from "web3";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -60,10 +61,16 @@ const func: DeployFunction = async function ({
   });
   const pythContract = (await getPythOracle(poolConfig, network));
 
-  const [assets, sources] = getPairsTokenAggregator(
+  const [assets, sourcesAddresses] = getPairsTokenAggregator(
     reserveAssets,
     chainlinkAggregators
   );
+  // convert to bytes32
+  const sources = [];
+  var web3 = new Web3(Web3.givenProvider);
+  for(let i = 0; i < sourcesAddresses.length; i++) {
+    sources.push("0x" + web3.utils.padLeft(sourcesAddresses[i].replace("0x", ""), 64));
+  }
 
   // Deploy AaveOracle
   await deploy(ORACLE_ID, {
