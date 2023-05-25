@@ -1,4 +1,4 @@
-import { getChainlinkOracles } from "../../helpers/market-config-helpers";
+import { getChainlinkOracles, getPythOracle } from "../../helpers/market-config-helpers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { COMMON_DEPLOY_PARAMS } from "../../helpers/env";
@@ -7,6 +7,8 @@ import {
   FALLBACK_ORACLE_ID,
   ORACLE_ID,
   POOL_ADDRESSES_PROVIDER_ID,
+  // pyth change
+  PYTH_ORACLE_ID
 } from "../../helpers/deploy-ids";
 import {
   loadPoolConfig,
@@ -19,6 +21,7 @@ import { eNetwork, ICommonConfiguration, SymbolMap } from "../../helpers/types";
 import { getPairsTokenAggregator } from "../../helpers/init-helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { MARKET_NAME } from "../../helpers/env";
+import Web3 from "web3";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -45,10 +48,29 @@ const func: DeployFunction = async function ({
   const reserveAssets = await getReserveAddresses(poolConfig, network);
   const chainlinkAggregators = await getChainlinkOracles(poolConfig, network);
 
-  const [assets, sources] = getPairsTokenAggregator(
+  // pyth change
+  const oracleMinFreshness = 100_000_000_000_000;
+  await deploy(PYTH_ORACLE_ID, {
+    from: deployer,
+    args: [
+      oracleMinFreshness,
+      0
+    ],
+    ...COMMON_DEPLOY_PARAMS,
+    contract: "MockPyth"
+  });
+  const pythContract = (await getPythOracle(poolConfig, network));
+
+  const [assets, sourcesAddresses] = getPairsTokenAggregator(
     reserveAssets,
     chainlinkAggregators
   );
+  // convert to bytes32
+  const sources = [];
+  var web3 = new Web3(Web3.givenProvider);
+  for(let i = 0; i < sourcesAddresses.length; i++) {
+    sources.push("0x" + web3.utils.padLeft(sourcesAddresses[i].replace("0x", ""), 64));
+  }
 
   // Deploy AaveOracle
   await deploy(ORACLE_ID, {
@@ -60,6 +82,9 @@ const func: DeployFunction = async function ({
       fallbackOracleAddress,
       ZERO_ADDRESS,
       parseUnits("1", OracleQuoteUnit),
+      // pyth change
+      pythContract,
+      oracleMinFreshness
     ],
     ...COMMON_DEPLOY_PARAMS,
     contract: "AaveOracle",

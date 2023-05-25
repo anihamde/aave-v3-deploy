@@ -6,11 +6,12 @@ import {
   FALLBACK_ORACLE_ID,
   ORACLE_ID,
   TESTNET_REWARD_TOKEN_PREFIX,
+  TESTNET_PRICE_AGGR_PREFIX,
 } from "../../helpers/deploy-ids";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import {
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  MOCK_ORACLES_PRICES,
   V3_CORE_VERSION,
 } from "../../helpers/constants";
 import { getContract, waitForTx } from "../../helpers/utilities/tx";
@@ -31,6 +32,8 @@ import {
 import { eNetwork } from "../../helpers/types";
 import Bluebird from "bluebird";
 import { MARKET_NAME } from "../../helpers/env";
+import Web3 from "web3";
+import { ethers } from "hardhat";
 
 const func: DeployFunction = async function ({
   getNamedAccounts,
@@ -64,61 +67,67 @@ const func: DeployFunction = async function ({
     );
   }
 
-  // 2. Set fallback oracle
-  const aaveOracle = (await getContract(
-    "AaveOracle",
-    await addressesProviderInstance.getPriceOracle()
-  )) as AaveOracle;
-
-  const configFallbackOracle = (await deployments.get(FALLBACK_ORACLE_ID))
-    .address;
+  // pyth change
+  // 2. set fallback oracle
+  const aaveOracle = (await getContract("AaveOracle", await addressesProviderInstance.getPriceOracle()));
+  const { address: configFallbackOracle} = (await deployments.get(FALLBACK_ORACLE_ID));
   const stateFallbackOracle = await aaveOracle.getFallbackOracle();
-
   if (getAddress(configFallbackOracle) === getAddress(stateFallbackOracle)) {
     console.log("[aave-oracle] Fallback oracle already set. Skipping tx.");
   } else {
     await waitForTx(await aaveOracle.setFallbackOracle(configFallbackOracle));
-    console.log(
-      `[Deployment] Added Fallback oracle ${configPriceOracle} to AaveOracle`
+    console.log(`[Deployment] Added Fallback oracle ${configFallbackOracle} to AaveOracle`);
+  }
+  // 3. For each source, update mock Pyth price to mirror aggregator price
+  const reserves = (await getReserveAddresses(poolConfig, network));
+  let symbols = Object.keys(reserves);
+  for (const symbol of symbols) {
+    const price = symbol === "StkAave"
+      ? MOCK_ORACLES_PRICES["AAVE"]
+      : MOCK_ORACLES_PRICES[symbol];
+    if (!price) {
+      throw `[ERROR] Misisng mock price for asset ${symbol} at MOCK_ORACLES_PRICES constant located at src/constants.ts`
+    }
+    const { address: source } = (await deployments.get(
+      `${symbol}${TESTNET_PRICE_AGGR_PREFIX}`
+    ));
+    var web3 = new Web3(Web3.givenProvider);
+    let sourceBytes32 = "0x"+web3.utils.padLeft(source.replace("0x", ""), 64);
+    const updateData = web3.eth.abi.encodeParameters(
+        ['bytes32', 'int64', 'uint64', 'int32', 'uint64', 'int64', 'uint64', 'int32', 'uint64'], 
+        [sourceBytes32, price, "1", "0", "1600000000000", price, "1", "0", "1600000000000"]
     );
+    await aaveOracle.updatePythPrice([updateData], { value: ethers.utils.parseEther('1.0') });
   }
 
-  // 3. If testnet, setup fallback token prices
+  // 4. If testnet, setup fallback token prices
   if (isProductionMarket(poolConfig)) {
     console.log("[Deployment] Skipping testnet token prices setup");
     // Early exit if is not a testnet market
     return true;
   } else {
-    console.log(
-      "[Deployment] Setting up fallback oracle default prices for testnet environment"
-    );
-
+    console.log("[Deployment] Setting up fallback oracle default prices for testnet environment");
     const reserves = await getReserveAddresses(poolConfig, network);
-
     const rewards = isIncentivesEnabled(poolConfig)
       ? await getSubTokensByPrefix(TESTNET_REWARD_TOKEN_PREFIX)
       : [];
-
     const rewardsSymbols = rewards.map(({ symbol }) => symbol);
     const symbols = [...Object.keys(reserves), ...rewardsSymbols];
-
     const allTokens = {
       ...reserves,
     };
-
     rewards.forEach(({ symbol, artifact: { address } }) => {
       allTokens[symbol] = address;
     });
-
     // Iterate each token symbol and deploy a mock aggregator
     await Bluebird.each(symbols, async (symbol) => {
       const price =
         symbol === "StkAave"
-          ? MOCK_CHAINLINK_AGGREGATORS_PRICES["AAVE"]
-          : MOCK_CHAINLINK_AGGREGATORS_PRICES[symbol];
+          ? MOCK_ORACLES_PRICES["AAVE"]
+          : MOCK_ORACLES_PRICES[symbol];
 
       if (!price) {
-        throw `[ERROR] Missing mock price for asset ${symbol} at MOCK_CHAINLINK_AGGREGATORS_PRICES constant located at src/constants.ts`;
+        throw `[ERROR] Missing mock price for asset ${symbol} at MOCK_ORACLES_PRICES constant located at src/constants.ts`;
       }
       await waitForTx(
         await PriceOracle__factory.connect(
@@ -127,9 +136,8 @@ const func: DeployFunction = async function ({
         ).setAssetPrice(allTokens[symbol], price)
       );
     });
-
     console.log("[Deployment] Fallback oracle asset prices updated");
-    return true;
+    return true
   }
 };
 

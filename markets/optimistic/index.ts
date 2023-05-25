@@ -73,6 +73,7 @@ export const OptimisticConfig: IAaveConfiguration = {
       SUSD: "0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3",
     },
   },
+  PythContract: "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 };
 
 export default OptimisticConfig;

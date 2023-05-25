@@ -32,7 +32,7 @@ import {
   VARIABLE_DEBT_PREFIX,
 } from "./deploy-ids";
 import { ZERO_ADDRESS } from "./constants";
-import { getTestnetReserveAddressFromSymbol, POOL_DATA_PROVIDER } from ".";
+import { getTestnetReserveAddressFromSymbol, POOL_DATA_PROVIDER, PYTH_ORACLE_ID } from ".";
 import { ENABLE_REWARDS } from "./env";
 
 declare var hre: HardhatRuntimeEnvironment;
@@ -268,6 +268,26 @@ export const getChainlinkOracles = async (
   return testnetKeys.reduce<ITokenAddress>((acc, key) => {
     const symbol = key.replace(TESTNET_PRICE_AGGR_PREFIX, "");
     acc[symbol] = allDeployments[key].address;
+    return acc;
+  }, {});
+};
+
+export const getPythOracle = async (
+  poolConfig: IBaseConfiguration, 
+  network: eNetwork
+) => {
+  const isLive = hre.config.networks[network].live;
+  if (isLive) {
+    console.log("[NOTICE] Using Pyth contract from configuration file");
+    return poolConfig["PythContract"];
+  }
+  console.log(
+    "[WARNING] Using deployed MockPyth instead of Pyth from configuration file"
+  );
+  const allDeployments = await hre.deployments.all();
+  const pythKeys = Object.keys(allDeployments).filter((key) => key === PYTH_ORACLE_ID);
+  return pythKeys.reduce((acc, key) => {
+    acc = allDeployments[key].address;
     return acc;
   }, {});
 };

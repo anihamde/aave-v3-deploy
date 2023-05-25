@@ -16,7 +16,7 @@ import {
 import { eNetwork } from "../../../helpers/types";
 import { TESTNET_PRICE_AGGR_PREFIX } from "../../../helpers/deploy-ids";
 import {
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  MOCK_ORACLES_PRICES,
   V3_CORE_VERSION,
 } from "../../../helpers/constants";
 import Bluebird from "bluebird";
@@ -52,10 +52,10 @@ const func: DeployFunction = async function ({
   await Bluebird.each(symbols, async (symbol) => {
     const price =
       symbol === "StkAave"
-        ? MOCK_CHAINLINK_AGGREGATORS_PRICES["AAVE"]
-        : MOCK_CHAINLINK_AGGREGATORS_PRICES[symbol];
+        ? MOCK_ORACLES_PRICES["AAVE"]
+        : MOCK_ORACLES_PRICES[symbol];
     if (!price) {
-      throw `[ERROR] Missing mock price for asset ${symbol} at MOCK_CHAINLINK_AGGREGATORS_PRICES constant located at src/constants.ts`;
+      throw `[ERROR] Missing mock price for asset ${symbol} at MOCK_ORACLES_PRICES constant located at src/constants.ts`;
     }
     await deploy(`${symbol}${TESTNET_PRICE_AGGR_PREFIX}`, {
       args: [price],

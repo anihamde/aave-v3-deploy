@@ -524,6 +524,8 @@ export interface IBaseConfiguration {
     total: number;
     protocol: number;
   };
+  // pyth change
+  PythContract: tEthereumAddress;
 }
 
 export interface ICommonConfiguration extends IBaseConfiguration {}

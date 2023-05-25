@@ -62,6 +62,7 @@ export const AaveMarket: IAaveConfiguration = {
       EURS: ZERO_ADDRESS,
     },
   },
+  PythContract: "0x4305FB66699C3B2702D4d05CF36551390A4c69C6",
   StkAaveProxy: {
     [eEthereumNetwork.main]: "0x4da27a545c0c5B758a6BA100e3a049001de870f5",
   },

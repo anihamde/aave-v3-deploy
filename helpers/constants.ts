@@ -49,8 +49,8 @@ export const WRAPPED_NATIVE_TOKEN_PER_NETWORK: { [network: string]: string } = {
 
 export const ZERO_BYTES_32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-export const MOCK_CHAINLINK_AGGREGATORS_PRICES: { [key: string]: string } = {
+// pyth change
+export const MOCK_ORACLES_PRICES: { [key: string]: string } = {
   AAVE: parseUnits("300", 8).toString(),
   WETH: parseUnits("4000", 8).toString(),
   ETH: parseUnits("4000", 8).toString(),

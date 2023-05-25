@@ -121,6 +121,7 @@ export const PolygonMarket: IAaveConfiguration = {
       AGEUR: "0x73366Fe0AA0Ded304479862808e02506FE556a98",
     },
   },
+  PythContract: "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 };
 
 export default PolygonMarket;

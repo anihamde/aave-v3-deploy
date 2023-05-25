@@ -59,6 +59,7 @@ export const AaveMarket: IAaveConfiguration = {
       LINK: ZERO_ADDRESS,
     },
   },
+  PythContract: "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 };
 
 export default AaveMarket;

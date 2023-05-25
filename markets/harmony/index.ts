@@ -78,6 +78,7 @@ export const HarmonyMarket: IAaveConfiguration = {
       assets: ["USDC", "USDT", "DAI"],
     },
   },
+  PythContract: "0x0",
 };
 
 export default HarmonyMarket;
